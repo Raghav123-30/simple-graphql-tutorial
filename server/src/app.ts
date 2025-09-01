@@ -23,6 +23,7 @@ const typeDefs = `#graphql
  
  type Student{
    name:String
+   address:String
  }
   
  type Todo {
@@ -47,9 +48,9 @@ const typeDefs = `#graphql
 const resolvers = {
   Query: {
     students: () => [
-      { name: "Raghavendra" },
-      { name: "Samant" },
-      { name: "Puneet" },
+      { name: "Raghavendra", address: "Navanagar" },
+      { name: "Samant", address: "Dharwad" },
+      { name: "Puneet", address: "Haliyal" },
     ],
   },
   Mutation: {
