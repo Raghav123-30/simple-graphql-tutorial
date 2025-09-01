@@ -10,15 +10,37 @@ app.get("/", (req, res) => {
   res.send({ message: "Hello there!" });
 });
 
+type Todo = {
+  id: number;
+  title: string;
+  done: boolean;
+};
+
+let todos: Todo[] = [{ id: 1, title: "Buy milk", done: false }];
+let nextId = 2;
+
 const typeDefs = `#graphql
  
  type Student{
    name:String
  }
   
+ type Todo {
+   id:ID!
+   title:String
+   done:Boolean
+ }
+  
  type Query{
   students:[Student]
  }
+  
+  type Mutation {
+    addTodo(title:String):Todo
+    updateTodo(id:ID!):Todo
+    deleteTodo(id:ID!):Todo
+  }
+  
 
 `;
 
@@ -29,6 +51,25 @@ const resolvers = {
       { name: "Samant" },
       { name: "Puneet" },
     ],
+  },
+  Mutation: {
+    addTodo: (parent: any, { title }: { title: string }): Todo => {
+      console.log(parent);
+      const newTodo: Todo = { id: nextId++, title, done: false };
+      todos.push(newTodo);
+      return newTodo;
+    },
+    updateTodo: (_: any, { id }: { id: number }): Todo => {
+      const updatedTodo = todos.find((item) => (item.id = id));
+      updatedTodo.done = !updatedTodo.done;
+      todos = todos.map((item) => {
+        if (item.id === id) {
+          return { ...todos, ...updatedTodo };
+        }
+        return item;
+      });
+      return updatedTodo;
+    },
   },
 };
 
