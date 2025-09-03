@@ -34,6 +34,7 @@ const typeDefs = `#graphql
   
  type Query{
   students:[Student]
+  todos:[Todo]
  }
   
   type Mutation {
@@ -52,6 +53,7 @@ const resolvers = {
       { name: "Samant", address: "Dharwad" },
       { name: "Puneet", address: "Haliyal" },
     ],
+    todos: () => todos,
   },
   Mutation: {
     addTodo: (parent: any, { title }: { title: string }): Todo => {
