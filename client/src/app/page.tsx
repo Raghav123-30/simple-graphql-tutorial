@@ -1,5 +1,6 @@
-import createApolloClient from "@/config/apollo-client";
+"use client";
 import { gql } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 
 type Todo = {
   id: number;
@@ -7,9 +8,8 @@ type Todo = {
   done: boolean;
 };
 
-export default async function Home() {
-  const client = createApolloClient();
-  const GET_TODOS = gql`
+export default function Home() {
+  const TODOS_QUERY = gql`
     query getTodos {
       todos {
         id
@@ -18,27 +18,21 @@ export default async function Home() {
       }
     }
   `;
-  const { data, error } = await client.query<{ todos: Todo[] }>({
-    query: GET_TODOS,
-  });
-
-  if (error) {
-    return <div>{error.message}</div>;
-  } else {
-    return (
-      <div className="max-w-3xl mx-auto pb-10">
-        {data?.todos.map((item) => (
-          <div
-            key={item.id}
-            className="bg-gray-50 rounded-md ring-1 ring-gray-200 shadow-md p-6"
-          >
-            <h1 className="font-bold text-lg mb-2">{item.title}</h1>
-            <p className="text-sm text-gray-600">
-              {item.done ? "Completed" : "Pending"}
-            </p>
-          </div>
-        ))}
-      </div>
-    );
+  const { data, error, loading } = useQuery<{ todos: Todo[] }>(TODOS_QUERY);
+  if (loading) {
+    return <p>loading...</p>;
   }
+  if (error) {
+    return <p className="text-red-500">{error.message}</p>;
+  }
+  return (
+    <div className="pb-10 max-w-3xl mx-auto">
+      {data?.todos.map((item) => (
+        <div key={item.id} className="bg-gray-50 p-3 rounded-md shadow-md">
+          <h1 className="font-bold text-lg">{item.title}</h1>
+          <p className="text-gray-600">{item.done ? "Completed" : "Pending"}</p>
+        </div>
+      ))}
+    </div>
+  );
 }
