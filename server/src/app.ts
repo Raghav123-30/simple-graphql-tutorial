@@ -3,6 +3,8 @@ import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express5";
 import express from "express";
 import cors from "cors";
+import db from "./db";
+import type { Todo } from "./generated/prisma";
 
 dotenv.config();
 const app = express();
@@ -12,22 +14,8 @@ app.get("/", (req, res) => {
   res.send({ message: "Hello there!" });
 });
 
-type Todo = {
-  id: number;
-  title: string;
-  done: boolean;
-};
-
-let todos: Todo[] = [{ id: 1, title: "Buy milk", done: false }];
-let nextId = 2;
-
 const typeDefs = `#graphql
  
- type Student{
-   name:String
-   address:String
- }
-  
  type Todo {
    id:ID!
    title:String
@@ -35,13 +23,13 @@ const typeDefs = `#graphql
  }
   
  type Query{
-  students:[Student]
+  
   todos:[Todo]
  }
   
   type Mutation {
     addTodo(title:String):Todo
-    updateTodo(id:ID!):Todo
+    completeTodo(id:ID!):Todo
     deleteTodo(id:ID!):Todo
   }
   
@@ -50,29 +38,29 @@ const typeDefs = `#graphql
 
 const resolvers = {
   Query: {
-    students: () => [
-      { name: "Raghavendra", address: "Navanagar" },
-      { name: "Samant", address: "Dharwad" },
-      { name: "Puneet", address: "Haliyal" },
-    ],
-    todos: () => todos,
+    todos: async () => await db.todo.findMany(),
   },
   Mutation: {
-    addTodo: (parent: any, { title }: { title: string }): Todo => {
+    addTodo: async (
+      parent: any,
+      { title }: { title: string }
+    ): Promise<Todo> => {
       console.log(parent);
-      const newTodo: Todo = { id: nextId++, title, done: false };
-      todos.push(newTodo);
+      const newTodo = await db.todo.create({
+        data: {
+          title,
+        },
+      });
       return newTodo;
     },
-    updateTodo: (_: any, { id }: { id: number }): Todo => {
-      const updatedTodo = todos.find((item) => (item.id = id));
-      updatedTodo.done = !updatedTodo.done;
-      todos = todos.map((item) => {
-        if (item.id === id) {
-          return { ...todos, ...updatedTodo };
-        }
-        return item;
+    completeTodo: async (_: any, { id }: { id: number }): Promise<Todo> => {
+      const updatedTodo = await db.todo.update({
+        where: { id },
+        data: {
+          done: true,
+        },
       });
+
       return updatedTodo;
     },
   },
