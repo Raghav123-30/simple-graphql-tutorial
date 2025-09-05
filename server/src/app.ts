@@ -14,6 +14,11 @@ app.get("/", (req, res) => {
   res.send({ message: "Hello there!" });
 });
 
+app.get("/todos", async (req, res) => {
+  const todos = await db.todo.findMany();
+  res.status(200).json({ todos });
+});
+
 const typeDefs = `#graphql
  
  type Todo {
@@ -38,7 +43,11 @@ const typeDefs = `#graphql
 
 const resolvers = {
   Query: {
-    todos: async () => await db.todo.findMany(),
+    todos: async () => {
+      const todos = await db.todo.findMany();
+
+      return todos;
+    },
   },
   Mutation: {
     addTodo: async (
@@ -55,7 +64,7 @@ const resolvers = {
     },
     completeTodo: async (_: any, { id }: { id: number }): Promise<Todo> => {
       const updatedTodo = await db.todo.update({
-        where: { id },
+        where: { id: Number(id) },
         data: {
           done: true,
         },
