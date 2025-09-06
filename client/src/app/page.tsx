@@ -12,7 +12,7 @@ export default function Home() {
         </Link>
         <Link
           className="bg-white py-4 px-8  rounded-full text-slate-950 border border-slate-950 hover:bg-gray-100 transition-colors duration-200"
-          href={"/server"}
+          href={"/client"}
         >
           Client
         </Link>
